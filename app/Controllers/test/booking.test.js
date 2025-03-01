@@ -1,10 +1,10 @@
 const request = require('supertest');
-const app = require('../app');
+const {app} = require('../../../index');
 
 describe('Booking API', () => {
   it('should book a ticket for an event', async () => {
     const response = await request(app)
-      .post('/api/booking/events/1/book')
+      .post('/api/bookings')
       .send({
         userId: 1,
         numberOfTickets: 2,
@@ -29,7 +29,7 @@ describe('Booking API', () => {
 
   it('should allow the user to delete a booking and refund tickets', async () => {
     const response = await request(app)
-      .delete('/api/booking/bookings/1');  // Assuming the booking exists
+      .delete('/api/bookings/my-bookings');  // Assuming the booking exists
     
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('Booking deleted and tickets refunded');

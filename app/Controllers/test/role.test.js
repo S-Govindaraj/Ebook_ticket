@@ -1,7 +1,8 @@
 const request = require('supertest');
-const app = require('../app'); // Your Express app
-const { sequelize, Role } = require('../Middleware/database');
-const { User } = require('../Models/User');
+const {app} = require('../../../index');
+const sequelize  = require('../../Middleware/database').sequelize;
+const  User = require('../../Models/User');
+const  Role  = require('../../Models/Role');
 
 // Setup: Add a user before testing
 beforeAll(async () => {
@@ -25,7 +26,7 @@ describe('Role API', () => {
 
   beforeAll(async () => {
     const loginResponse = await request(app)
-      .post('/api/auth/login')
+      .post('/api/login')
       .send({
         email: 'test@user.com',
         password: 'password123',
@@ -37,7 +38,7 @@ describe('Role API', () => {
 
   it('should create a new role', async () => {
     const response = await request(app)
-      .post('/api/roles')
+      .post('/api/role')
       .set('Authorization', `Bearer ${authToken}`)
       .send({
         name: 'Admin',
@@ -51,7 +52,7 @@ describe('Role API', () => {
 
   it('should return 400 when role name is less than 3 characters', async () => {
     const response = await request(app)
-      .post('/api/roles')
+      .post('/api/role')
       .set('Authorization', `Bearer ${authToken}`)
       .send({
         name: 'Ad', 
@@ -62,7 +63,7 @@ describe('Role API', () => {
     expect(response.body.message).toBe('Role name is required and should be at least 3 characters long.');
   });
 
-  it('should get all roles', async () => {
+  it('should get all role', async () => {
     await Role.create({
       name: 'Admin',
       status: 1,
@@ -71,7 +72,7 @@ describe('Role API', () => {
     });
 
     const response = await request(app)
-      .get('/api/roles')
+      .get('/api/role')
       .set('Authorization', `Bearer ${authToken}`);
 
     expect(response.status).toBe(200);
@@ -88,7 +89,7 @@ describe('Role API', () => {
     });
 
     const response = await request(app)
-      .get(`/api/roles/${role.id}`)
+      .get(`/api/role/${role.id}`)
       .set('Authorization', `Bearer ${authToken}`);
 
     expect(response.status).toBe(200);
@@ -97,7 +98,7 @@ describe('Role API', () => {
 
   it('should return 404 if role not found', async () => {
     const response = await request(app)
-      .get('/api/roles/9999') 
+      .get('/api/role/9999') 
       .set('Authorization', `Bearer ${authToken}`);
 
     expect(response.status).toBe(404);
@@ -113,7 +114,7 @@ describe('Role API', () => {
     });
 
     const response = await request(app)
-      .put(`/api/roles/${role.id}`)
+      .put(`/api/role/${role.id}`)
       .set('Authorization', `Bearer ${authToken}`)
       .send({
         name: 'Super User',
@@ -134,7 +135,7 @@ describe('Role API', () => {
     });
 
     const response = await request(app)
-      .put(`/api/roles/${role.id}`)
+      .put(`/api/role/${role.id}`)
       .set('Authorization', `Bearer ${authToken}`)
       .send({
         name: 'Su',
@@ -154,7 +155,7 @@ describe('Role API', () => {
     });
 
     const response = await request(app)
-      .delete(`/api/roles/${role.id}`)
+      .delete(`/api/role/${role.id}`)
       .set('Authorization', `Bearer ${authToken}`);
 
     expect(response.status).toBe(200);
@@ -164,7 +165,7 @@ describe('Role API', () => {
 
   it('should return 404 if trying to delete a non-existent role', async () => {
     const response = await request(app)
-      .delete('/api/roles/9999') 
+      .delete('/api/role/9999') 
       .set('Authorization', `Bearer ${authToken}`);
 
     expect(response.status).toBe(404);

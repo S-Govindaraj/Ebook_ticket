@@ -1,7 +1,8 @@
 const request = require('supertest');
-const app = require('../app');
 const Event = require('../../Models/Events'); 
-const sequelize = require('sequelize')
+const {app} = require('../../../index');
+const sequelize  = require('../../Middleware/database').sequelize;
+
 describe('Event Controller Tests', () => {
   let adminToken;
   let userToken;
@@ -9,12 +10,12 @@ describe('Event Controller Tests', () => {
 
   beforeAll(async () => {
     const adminResponse = await request(app)
-      .post('/login')
+      .post('/api/login')
       .send({ username: 'admin', password: 'admin_password' });
 
     adminToken = adminResponse.body.token;
     const userResponse = await request(app)
-      .post('/login')
+      .post('/api/login')
       .send({ username: 'user', password: 'user_password' });
 
     userToken = userResponse.body.token; 
@@ -32,7 +33,7 @@ describe('Event Controller Tests', () => {
     };
 
     const response = await request(app)
-      .post('/events') 
+      .post('/api/events') 
       .set('Authorization', `Bearer ${adminToken}`)
       .send(newEventData);
 
@@ -44,7 +45,7 @@ describe('Event Controller Tests', () => {
 
   it('should return all events', async () => {
     const response = await request(app)
-      .get('/events') 
+      .get('/api/events') 
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(response.status).toBe(200);
@@ -60,7 +61,7 @@ describe('Event Controller Tests', () => {
     };
 
     const response = await request(app)
-      .post('/events')
+      .post('/api/events')
       .set('Authorization', `Bearer ${userToken}`)
       .send(newEventData);
 
@@ -70,7 +71,7 @@ describe('Event Controller Tests', () => {
 
   it('should mark event as deleted instead of deleting it', async () => {
     const response = await request(app)
-      .delete(`/events/${eventId}`) 
+      .delete(`/api/events/${eventId}`) 
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(response.status).toBe(200);
@@ -84,7 +85,7 @@ describe('Event Controller Tests', () => {
     const nonExistentEventId = 999999;
 
     const response = await request(app)
-      .delete(`/events/${nonExistentEventId}`)
+      .delete(`/api/events/${nonExistentEventId}`)
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(response.status).toBe(404);
