@@ -1,0 +1,19 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Enabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "ticket_booking",
+            "database": "ticket_booking",
+            "username": "govindaraj",
+            "password": "Sgovi@5697",
+            "connectionTimeout": 3600
+        }
+    ]
+}
