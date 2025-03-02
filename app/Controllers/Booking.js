@@ -2,6 +2,7 @@ const Event = require("../Models/Events");
 const User = require("../Models/User");
 const Booking = require("../Models/Booking");
 const generateQRCode = require("../Common/QRGenerator");
+const sendEmail = require("../Common/nodeMailer");
 
 const sequelize = require("../Middleware/database").sequelize;
 
@@ -42,7 +43,6 @@ exports.bookTicket = async (req, res) => {
           status: 1,
         },
       });
-
       const ticketData = {
         name: user.username,
         event: event.name,
@@ -52,7 +52,15 @@ exports.bookTicket = async (req, res) => {
       const ticketInfo = `Ticket Details: ${JSON.stringify(ticketData)}`;
     
       let qrCode = await generateQRCode(ticketInfo);
-
+      // Mail : 
+      const sendToMail = user.email;
+      const eventName = ticketData.event;
+      const subject = `Your Ticket is Booked for ${eventName}`
+      const emailData = {
+        name: user.username,
+        eventName: eventName
+      }
+      sendEmail.sendEmails({ file: "sendMailForTicketBooking.ejs", sendToMail, subject, data: emailData });
       await event.save({ transaction });
       await transaction.commit();
       res.status(201).json({ message: "Booking successful", booking, qrCode });

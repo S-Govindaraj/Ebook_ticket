@@ -6,5 +6,11 @@
   "DB_HOST": "localhost",
   "DB_PORT": 8080,
   "jwtSecret": "mysecrettoken",
-  "endepwd": "d6F3Efeq"
+  "endepwd": "d6F3Efeq",
+  "SEND_EMAIL": true,
+  "Mail_Port": 587,
+  "host": "smtp.gmail.com",
+  "Mail_User": "sgovindaraj09@gmail.com",
+  "Mail_Pass": "grfdpbrgtzobanhb",
+  "FromEmail": "sgovindaraj09@gmail.com"
 }

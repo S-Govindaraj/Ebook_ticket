@@ -11,10 +11,10 @@ module.exports = function(req, res, next) {
         return res.status(401).json({ message: 'No token, authorization denied' });
     }
     
-    // Api tool Check
-    if (restrictedAgents.some(agent => userAgent.includes(agent))) {
-        return res.status(401).json({ message: 'Unauthorized device' });
-    }
+    // // Api tool Check
+    // if (restrictedAgents.some(agent => userAgent.includes(agent))) {
+    //     return res.status(401).json({ message: 'Unauthorized device' });
+    // }
     // Verify token
     try {
         const decoded = jwt.verify(token, "randomString");
