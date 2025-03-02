@@ -45,7 +45,5 @@ const Role = sequelize.define(
   }
 );
 
-Role.belongsTo(User, { foreignKey: "createdBy", as: "creator" });
-Role.belongsTo(User, { foreignKey: "updatedBy", as: "updater" });
 
 module.exports = Role;
