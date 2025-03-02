@@ -1,9 +1,9 @@
-const User = require('../Models/User');
-const Role = require('../Models/Role');
-
+const User = require("../Models/User");
+const Role = require("../Models/Role");
+const sequelize = require("../Middleware/database").sequelize;
 exports.getAllUsers = async (req, res) => {
   try {
-    const page = parseInt(req?.query?.page) || 1; 
+    const page = parseInt(req?.query?.page) || 1;
     const limit = parseInt(req?.query?.limit) || 10;
     const offset = (page - 1) * limit;
 
@@ -35,21 +35,23 @@ exports.getAllUsers = async (req, res) => {
 
     const users = await User.findAll({
       where: whereConditions,
-      include: [{
-        model: Role,
-        as:'role',
-        attributes: ['name'] 
-      },
-      {
-        model: User,
-        as:'creator',
-        attributes: ['username'] 
-      },
-      {
-        model: User,
-        as:'updater',
-        attributes: ['username'] 
-      }],
+      include: [
+        {
+          model: Role,
+          as: "role",
+          attributes: ["name"],
+        },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["username"],
+        },
+        {
+          model: User,
+          as: "updater",
+          attributes: ["username"],
+        },
+      ],
       offset,
       limit,
     });
@@ -62,47 +64,61 @@ exports.getAllUsers = async (req, res) => {
       pages: Math.ceil(total / limit),
     });
   } catch (err) {
-    return res.status(500).json({ message: 'Error creating user' });
+    return res.status(500).json({ message: "Error creating user" });
   }
 };
 
-
 exports.createUser = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
-    const { username, email, password,roleId,status } = req.body;
+    const { username, email, password, roleId, status } = req.body;
     const updatedBy = req.user.id;
     const createdBy = req.user.id;
-    const existingUser = await User.findOne({ where: { email } });
+
+    const existingUser = await User.findOne({ where: { email }, transaction });
     if (existingUser) {
-      return res.status(400).json({ message: 'User with this email already exists' });
+      await transaction.rollback();
+      return res
+        .status(400)
+        .json({ message: "User with this email already exists" });
     }
 
-    const user = await User.create({
-      username,
-      email,
-      password,
-      roleId,
-      updatedBy,
-      createdBy,
-      status
-    });
+    const user = await User.create(
+      {
+        username,
+        email,
+        password,
+        roleId,
+        updatedBy,
+        createdBy,
+        status,
+      },
+      { transaction }
+    );
 
+    await transaction.commit();
     res.status(201).json(user);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating user' });
+    await transaction.rollback();
+    res
+      .status(500)
+      .json({ message: "Error creating user", error: error.message });
   }
-};;
-
+};
 
 exports.updateUser = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     const updatedBy = req.user.id;
-    const user = await User.findByPk(id);
-    const { username, email, password, roleId, city, status } = req.body; 
+    const user = await User.findByPk(id, { transaction });
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      await transaction.rollback();
+      return res.status(404).json({ message: "User not found" });
     }
+
+    const { username, email, password, roleId, city, status } = req.body;
 
     user.username = username || user.username;
     user.email = email || user.email;
@@ -110,37 +126,48 @@ exports.updateUser = async (req, res) => {
     user.roleId = roleId || user.roleId;
     user.city = city || user.city;
     user.status = status || user.status;
-    user.updatedBy = updatedBy
+    user.updatedBy = updatedBy;
 
-    await user.save();
+    await user.save({ transaction });
 
+    await transaction.commit();
     return res.status(200).json({
-      message: 'User updated successfully',
-      user
+      message: "User updated successfully",
+      user,
     });
   } catch (err) {
-    return  res.status(500).json({ message: 'Error updating user', error: err.message });
+    await transaction.rollback();
+    return res
+      .status(500)
+      .json({ message: "Error updating user", error: err.message });
   }
 };
 
 exports.deleteUser = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     const updatedBy = req.user.id;
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, { transaction });
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      await transaction.rollback();
+      return res.status(404).json({ message: "User not found" });
     }
 
     user.status = 0;
-    user.updatedBy = updatedBy
-    await user.save();
+    user.updatedBy = updatedBy;
+    await user.save({ transaction });
 
+    await transaction.commit();
     res.status(200).json({
-      message: 'User deleted successfully',
-      user
+      message: "User deleted successfully",
+      user,
     });
   } catch (err) {
-    res.status(500).json({ message: 'Error deleting user', error: err.message });
+    await transaction.rollback();
+    res
+      .status(500)
+      .json({ message: "Error deleting user", error: err.message });
   }
 };

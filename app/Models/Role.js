@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../Middleware/database").sequelize;
-const User = require("../Models/User"); 
+const User = require("../Models/User");
 
 const Role = sequelize.define(
   "Role",
@@ -26,7 +26,7 @@ const Role = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: "users", 
+        model: "users",
         key: "id",
       },
     },
@@ -34,7 +34,7 @@ const Role = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: "users", 
+        model: "users",
         key: "id",
       },
     },

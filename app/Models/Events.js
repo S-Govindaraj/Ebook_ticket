@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../Middleware/database").sequelize;
+const User = require('../Models/User')
 const Event = sequelize.define(
   "Event",
   {
@@ -28,11 +29,27 @@ const Event = sequelize.define(
     },
     bookedTickets: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      defaultValue: 1,
     },
     status: {
       type: DataTypes.INTEGER,
       defaultValue: 1,
+    },
+    createdBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "users",
+        key: "id",
+      },
+    },
+    updatedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "users",
+        key: "id",
+      },
     },
   },
   {
@@ -40,5 +57,8 @@ const Event = sequelize.define(
     timestamps: true,
   }
 );
+
+Event.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+Event.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
 
 module.exports = Event

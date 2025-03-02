@@ -99,26 +99,38 @@ exports.getUserBookings = async (req, res) => {
 };
 
 exports.deleteBooking = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
     const { id } = req.params;
     const updatedBy = req.user.id;
-    const booking = await Booking.findByPk(id);
 
+    const booking = await Booking.findByPk(id, { transaction });
     if (!booking) {
+      await transaction.rollback(); 
       return res.status(404).json({ message: "Booking not found" });
     }
-    const event = await Event.findByPk(booking.eventId);
-    event.bookedTickets -= booking.numberOfTickets;
-    booking.status = 0;
-    event.updatedBy = updatedBy;
-    booking.updatedBy = updatedBy;
-    await booking.save();
-    await event.save();
 
+    const event = await Event.findByPk(booking.eventId, { transaction });
+    if (!event) {
+      await t.rollback();  
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    event.bookedTickets -= booking.numberOfTickets;
+    booking.status = 0; 
+    event.updatedBy = updatedBy;
+    event.updatedAt = Date.now();
+    booking.updatedAt = Date.now();
+    booking.updatedBy = updatedBy;
+
+    await booking.save({ transaction });
+    await event.save({ transaction });
+
+    await transaction.commit();
     res.status(200).json({ message: "Booking deleted and tickets refunded" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error processing refund", error: error.message });
+    await transaction.rollback(); 
+    res.status(500).json({ message: "Error processing refund", error: error.message });
   }
 };
+

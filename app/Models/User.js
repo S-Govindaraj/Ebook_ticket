@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const { DataTypes } = require("sequelize");
 const sequelize = require("../Middleware/database").sequelize;
+const Role = require("../Models/Role");
 const User = sequelize.define(
   "User",
   {
@@ -65,9 +66,9 @@ const User = sequelize.define(
 );
 
 
+User.hasOne(Role, { foreignKey: 'roleId', as: 'role' });
 User.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 User.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
-
 
 User.prototype.comparePassword = function (password) {
   return bcrypt.compareSync(password, this.password);
