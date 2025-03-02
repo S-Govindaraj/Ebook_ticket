@@ -10,8 +10,9 @@ const loginController = require("../Controllers/Auth/login");
 const eventController = require("../Controllers/Events");
 const roleController = require("../Controllers/Role");
 const bookController = require("../Controllers/Booking");
+const rateLimiter = require("..//Middleware/rateLimiter");
 
-api.post("/login", loginController.login);
+api.post("/login", rateLimiter, loginController.login);
 
 api.post("/encrypt", controller.encrypt);
 api.post("/decrypt", controller.decrypt);
@@ -30,21 +31,36 @@ groupRouting(api, "/", auth, (api) => {
   api.post(
     "/users",
     [
-      check("username").notEmpty().withMessage("Username is required").isString().withMessage("Username must be a string"),
-      check("email").isEmail().withMessage("Valid email is required").normalizeEmail(),
-      check("password").notEmpty().withMessage("Password is required").isString().withMessage("Password must be a string"),
-      check("roleId").optional().isInt().withMessage("Role ID must be a valid integer"),
+      check("username")
+        .notEmpty()
+        .withMessage("Username is required")
+        .isString()
+        .withMessage("Username must be a string"),
+      check("email")
+        .isEmail()
+        .withMessage("Valid email is required")
+        .normalizeEmail(),
+      check("password")
+        .notEmpty()
+        .withMessage("Password is required")
+        .isString()
+        .withMessage("Password must be a string"),
+      check("roleId")
+        .optional()
+        .isInt()
+        .withMessage("Role ID must be a valid integer"),
       check("city").optional().isString().withMessage("City must be a string"),
-      check("status").optional().isInt({ min: 0, max: 1 }).withMessage("Status must be either 0 or 1"), // Active or inactive
+      check("status")
+        .optional()
+        .isInt({ min: 0, max: 1 })
+        .withMessage("Status must be either 0 or 1"), // Active or inactive
     ],
     handleValidationErrors,
     userController.createUser
   );
   api.put(
     "/users/:id",
-    [
-      check("id").isInt().withMessage("Invalid user ID"),
-    ],
+    [check("id").isInt().withMessage("Invalid user ID")],
     userController.updateUser
   );
   api.delete(
@@ -108,9 +124,7 @@ groupRouting(api, "/", auth, (api) => {
 
   api.put(
     "/role/:id",
-    [
-      check("id").isInt().withMessage("Role ID must be a valid integer"),
-    ],
+    [check("id").isInt().withMessage("Role ID must be a valid integer")],
     handleValidationErrors,
     roleController.updateRole
   );
@@ -125,18 +139,18 @@ groupRouting(api, "/", auth, (api) => {
   // Booking
 
   api.post(
-    '/bookings',
+    "/bookings",
     [
-      check('userId').isInt().withMessage('User ID must be an integer'),
-      check('numberOfTickets')
+      check("userId").isInt().withMessage("User ID must be an integer"),
+      check("numberOfTickets")
         .isInt({ min: 1 })
-        .withMessage('Number of tickets must be a positive integer'),
+        .withMessage("Number of tickets must be a positive integer"),
     ],
     handleValidationErrors,
     bookController.bookTicket
   );
-  api.get('/bookings/my-bookings', bookController.getUserBookings);
-  api.delete('/bookings/:id', bookController.deleteBooking);
+  api.get("/bookings/my-bookings", bookController.getUserBookings);
+  api.delete("/bookings/:id", bookController.deleteBooking);
 });
 
 module.exports = api;
