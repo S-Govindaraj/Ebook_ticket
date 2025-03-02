@@ -3,6 +3,7 @@ const config = require("config");
 const bodyParser = require("body-parser");
 const cors = require('cors');
 const { connectDB, sequelize } = require("./app/Middleware/database");
+const rateLimiter = require("./app/Middleware/rateLimiter");
 const { RequestDecrypt } = require("./app/Middleware/RequestDecrypt");
 const app = express();
  connectDB();
@@ -17,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(bodyParser.json());
-
+app.use(rateLimiter);
 app.use(cors({
   origin: '*'
 }));

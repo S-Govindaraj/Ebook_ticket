@@ -66,7 +66,7 @@ const User = sequelize.define(
 );
 
 
-User.hasOne(Role, { foreignKey: 'roleId', as: 'role' });
+User.belongsTo(Role, { foreignKey: 'roleId', as: 'role' });
 User.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 User.belongsTo(User, { foreignKey: 'updatedBy', as: 'updater' });
 
