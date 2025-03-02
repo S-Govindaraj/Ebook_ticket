@@ -1,4 +1,5 @@
 const Event = require("../Models/Events");
+const User = require("../Models/User");
 const { Op } = require("sequelize");
 const sequelize = require("../Middleware/database").sequelize;
 
@@ -55,6 +56,18 @@ exports.createEvent = async (req, res) => {
 exports.listEvents = async (req, res) => {
   try {
     const events = await Event.findAll({
+      include: [
+        {
+          model: User,
+          as: "creator",
+          attributes: ["username"],
+        },
+        {
+          model: User,
+          as: "updater",
+          attributes: ["username"],
+        },
+      ],
       order: [["date", "ASC"]],
     });
 
